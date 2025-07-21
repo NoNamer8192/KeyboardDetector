@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "id": "keyboarddetector",
+  "version": "${version}",
+  "name": "KeyboardDetector",
+  "description": "A mod detects keypress events, allowing more keypress interactions!",
+  "authors": [
+    "NoNamer8192_",
+    "Lumine1909"
+  ],
+  "contact": {
+    "homepage": "https://fabricmc.net/",
+    "sources": "https://github.com/FabricMC/fabric-example-mod"
+  },
+  "license": "CC0-1.0",
+  "icon": "assets/keyboarddetector/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.keyboarddetector.KeyboardDetector"
+    ],
+    "client": [
+      "com.keyboarddetector.KeyboardDetectorClient"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.16.14",
+    "minecraft": "~1.21.4",
+    "java": ">=21",
+    "fabric-api": "*"
+  },
+  "suggests": {
+    "another-mod": "*"
+  }
+}
