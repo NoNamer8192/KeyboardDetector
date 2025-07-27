@@ -39,7 +39,16 @@ public class KeyboardDetector implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        LOGGER.info("KeyboardDetector mod initialized!");
+        LOGGER.info("""
+                \u001B[33m
+                    _/    _/                      _/                                            _/  _/_/_/                _/                            _/                         \s
+                   _/  _/      _/_/    _/    _/  _/_/_/      _/_/      _/_/_/  _/  _/_/    _/_/_/  _/    _/    _/_/    _/_/_/_/    _/_/      _/_/_/  _/_/_/_/    _/_/    _/  _/_/  \s
+                  _/_/      _/_/_/_/  _/    _/  _/    _/  _/    _/  _/    _/  _/_/      _/    _/  _/    _/  _/_/_/_/    _/      _/_/_/_/  _/          _/      _/    _/  _/_/       \s
+                 _/  _/    _/        _/    _/  _/    _/  _/    _/  _/    _/  _/        _/    _/  _/    _/  _/          _/      _/        _/          _/      _/    _/  _/          \s
+                _/    _/    _/_/_/    _/_/_/  _/_/_/      _/_/      _/_/_/  _/          _/_/_/  _/_/_/      _/_/_/      _/_/    _/_/_/    _/_/_/      _/_/    _/_/    _/           \s
+                                         _/                                                                                                                                        \s
+                                    _/_/                                                                                                                                           \s
+                """);
 
         // 注册网络接收器
         PayloadTypeRegistry.playC2S().register(ID, CODEC);
