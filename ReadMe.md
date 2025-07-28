@@ -25,7 +25,7 @@ Detects real-time press state of a specific keyboard key
 |Parameter |	Description |	Example Values |
 |------------|----------------|-----------------|
 | `<PlayerID>` |	Target player selector |	@p, @a, @e[type=player]|
-| `<KeyAscii>` |	ASCII code of the 11key to detect |	49 (1), 32 (Space), 65 (A)|  
+| `<KeyAscii>` |	ASCII code of the 11key to detect |	49 (1), 50 (2), 51 (3)|  
 ### Usage Example
 
 ````command
@@ -60,14 +60,14 @@ Detects simultaneous pressing of multiple keys (independent key processing)
 ```command
 /keyboarddetector matchgroup @p 49,50,51 false
 ````
-Detects simultaneous press of 1, 2, 3 keys
+Detects simultaneous press of keys '1', '2', '3'.
 
 #### Persistent mode:
 
 ````command
-/keyboarddetector matchgroup @p 67,86,88 true
+/keyboarddetector matchgroup @p 49,50,51 true
 ````
-Detects Ctrl+C+V combination and maintains state
+Detects '1', '2', '3' combination and maintains redstone output state. 
 
 ### Command Block Behavior
 |Mode |	Behavior |
@@ -93,12 +93,16 @@ Clears persistent key states created by `matchgroup` with `keepStatic=true`
 /keyboarddetector flush
 ````
 
-#### Effects
-🔻 Immediately terminates all active redstone signals  
+#### Effects 
 
 ♻️ Resets all detection states  
 
 🚦 Requires new key combination press to reactivate  
+
+### Attention
+
+❗ When more than 1 command blocks are exetuting `/keyboarddetector` `matchgroup`, make sure all `KeyAsciiList` have no elements in common.
+  Otherwise, only one of the key events can be triggered.
 
 ### ASCII Key Reference Table
 
