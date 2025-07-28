@@ -1,5 +1,6 @@
 Keyboard Detector Command Usage Guide
 =============================================================================
+
 1. /keyboarddetector iskeydown
 Function: Detects whether a single key is pressed.
 Usage: /keyboarddetector iskeydown <PlayerID> <KeyAscii>
@@ -14,6 +15,7 @@ Returns true and outputs a redstone signal while '1' is held.
 Returns false with no redstone output when released.
 
 =============================================================================
+
 2. /keyboarddetector matchgroup
 Function: Detects simultaneous multi-key presses (keys are processed without mutual interference).
 Usage: /keyboarddetector matchgroup <PlayerID> <KeyAscii1>,<KeyAscii2>,... <keepStatic>
@@ -30,6 +32,7 @@ If <keepStatic> is set to true:
 Maintains true/redstone signal after keys are released until manually reset.
 
 =============================================================================
+
 3. /keyboarddetector flush
 Function: Clears all stored key-press records (used when <keepStatic> is true).
 Example:
