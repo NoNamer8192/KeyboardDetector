@@ -99,3 +99,62 @@ Clears persistent key states created by `matchgroup` with `keepStatic=true`
 ♻️ Resets all detection states  
 
 🚦 Requires new key combination press to reactivate  
+
+### ASCII Key Reference Table
+
+| Key          | ASCII Code | Key         | ASCII Code |
+|--------------|------------|-------------|------------|
+| **Numbers**  |            | **Letters** |            |
+| 0            | 48         | A           | 65         |
+| 1            | 49         | B           | 66         |
+| 2            | 50         | C           | 67         |
+| 3            | 51         | D           | 68         |
+| 4            | 52         | E           | 69         |
+| 5            | 53         | F           | 70         |
+| 6            | 54         | G           | 71         |
+| 7            | 55         | H           | 72         |
+| 8            | 56         | I           | 73         |
+| 9            | 57         | J           | 74         |
+|              |            | K           | 75         |
+|              |            | L           | 76         |
+|              |            | M           | 77         |
+|              |            | N           | 78         |
+|              |            | O           | 79         |
+|              |            | P           | 80         |
+|              |            | Q           | 81         |
+|              |            | R           | 82         |
+|              |            | S           | 83         |
+|              |            | T           | 84         |
+|              |            | U           | 85         |
+|              |            | V           | 86         |
+|              |            | W           | 87         |
+|              |            | X           | 88         |
+|              |            | Y           | 89         |
+|              |            | Z           | 90         |
+|              |            |             |            |
+| **Functions**|            | **Special** |            |
+| F1           | 112        | Space       | 32         |
+| F2           | 113        | Enter       | 13         |
+| F3           | 114        | Esc         | 27         |
+| F4           | 115        | Tab         | 9          |
+| F5           | 116        | Caps Lock   | 20         |
+| F6           | 117        | Shift       | 16         |
+| F7           | 118        | Ctrl        | 17         |
+| F8           | 119        | Alt         | 18         |
+| F9           | 120        | Backspace   | 8          |
+| F10          | 121        | Delete      | 46         |
+| F11          | 122        | Insert      | 45         |
+| F12          | 123        | Home        | 36         |
+|              |            | End         | 35         |
+|              |            | Page Up     | 33         |
+|              |            | Page Down   | 34         |
+|              |            | Arrow Up    | 38         |
+|              |            | Arrow Down  | 40         |
+|              |            | Arrow Left  | 37         |
+|              |            | Arrow Right | 39         |
+
+**Notes**:  
+- Lowercase letters: a=97, b=98 ... z=122
+- Numeric keypad: 0=96, 1=97 ... 9=105
+- Case sensitive (A=65 vs a=97)
+- Full reference: [ASCII Table](https://www.asciitable.com)
