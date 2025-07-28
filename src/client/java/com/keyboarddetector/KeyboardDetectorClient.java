@@ -29,12 +29,7 @@ public class KeyboardDetectorClient implements ClientModInitializer {
             }
 
             Set<Byte> pressedKeys = new HashSet<>();
-            for (byte ascii = 48; ascii < 58; ascii++) {
-                if (isKeyPressed(ascii)) {
-                    pressedKeys.add(ascii);
-                }
-            }
-            for (byte ascii = 65; ascii < 91; ascii++) {
+            for (byte ascii = 8; ascii < 124; ascii++) {
                 if (isKeyPressed(ascii)) {
                     pressedKeys.add(ascii);
                 }
