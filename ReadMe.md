@@ -1,56 +1,101 @@
-Keyboard Detector Command Usage Guide
-=============================================================================
+# Keyboard Detector Command Guide
 
-1. /keyboarddetector iskeydown
+*Advanced keyboard event detection in Minecraft*
 
-Function: Detects whether a single key is pressed.
+## Command Overview
 
-Usage: /keyboarddetector iskeydown <PlayerID> <KeyAscii>
+| Command       | Functionality                     | Key Parameters               |
+|---------------|-----------------------------------|------------------------------|
+| `iskeydown`   | Single key press detection        | `<KeyAscii>`                 |
+| `matchgroup`  | Multi-key combination detection   | `<KeyAsciiList>`, `<keepStatic>` |
+| `flush`       | Reset persistent key states       | None                         |
 
-Example: /keyboarddetector iskeydown @p 49
+---
 
-Detects if the player presses the '1' key.
+## 1. Single Key Detection: `/keyboarddetector iskeydown`
 
-When placed in a repeating command block:
+### Functionality
+Detects real-time press state of a specific keyboard key
 
-Returns true and outputs a redstone signal while '1' is held.
+### Command Syntax
+````command
+/keyboarddetector iskeydown <PlayerID> <KeyAscii>
+````
 
-Returns false with no redstone output when released.
+|Parameter |	Description |	Example Values |
+|------------|----------------|-----------------|
+| `<PlayerID>` |	Target player selector |	@p, @a, @e[type=player]|
+| `<KeyAscii>` |	ASCII code of the 11key to detect |	49 (1), 32 (Space), 65 (A)|  
+### Usage Example
 
-=============================================================================
+````command
+/keyboarddetector iskeydown @p 49
+````  
+Detects if target player is pressing the '1' key
+#### Command Block Behavior
+- In repeating command blocks:  
+  - 🔴 Key pressed: Returns true and activates redstone signal  
+  - ⚪ Key released: Returns false and deactivates redstone signal  
+## 2. Key Combination Detection: /keyboarddetector matchgroup
+### Functionality  
 
-2. /keyboarddetector matchgroup
+Detects simultaneous pressing of multiple keys (independent key processing)
 
-Function: Detects simultaneous multi-key presses (keys are processed without mutual interference).
+### Command Syntax  
+````command
+/keyboarddetector matchgroup <PlayerID> <KeyAsciiList> <keepStatic>
+````
+### Parameters  
 
-Usage: /keyboarddetector matchgroup <PlayerID> <KeyAscii1>,<KeyAscii2>,... <keepStatic>
+|Parameter |	Description |	Example Values |
+|------------|----------------|-----------------|
+| `<PlayerID>` |	Target player selector |	@p, @a|
+| `<KeyAscii>` |	Comma-separated ASCII codes |	49,50,51 (1,2,3)|  
+| `<keepStatic>` |	Persistent state mode (true/false) |	true, false|  
 
-Example: /keyboarddetector matchgroup @p 49,50,51 false
 
-Detects if the player presses '1', '2', and '3' concurrently.
+### Usage Examples
+#### Standard mode:
 
-When placed in a repeating command block:
+```command
+/keyboarddetector matchgroup @p 49,50,51 false
+````
+Detects simultaneous press of 1, 2, 3 keys
 
-Returns true/redstone signal only when all specified keys are pressed simultaneously.
+#### Persistent mode:
 
-If <keepStatic> is set to true:
+````command
+/keyboarddetector matchgroup @p 67,86,88 true
+````
+Detects Ctrl+C+V combination and maintains state
 
-Maintains true/redstone signal after keys are released until manually reset.
+### Command Block Behavior
+|Mode |	Behavior |
+|------------|--------------------------|
+| Standard Mode `(keepStatic=false)` | • Activates signal when all keys are pressed simultaneously <br>• Deactivates immediately when any key is released |
+| Persistent Mode `(keepStatic=true)` |	• Locks signal on first successful detection.<br>• Maintains activation after keys are released.<br>• Requires manual flush to reset | 
 
-=============================================================================
+## 3. State Reset Command: /keyboarddetector flush
+### Functionality
+Clears persistent key states created by `matchgroup` with `keepStatic=true`
 
-3. /keyboarddetector flush
+### Usage Scenario
+1.  Persistent mode activated:  
 
-Function: Clears all stored key-press records (used when <keepStatic> is true).
+````command
+/keyboarddetector matchgroup @p 49,50,51 true
+````  
+2.  After keys are pressed, signal stays active  
 
-Example:
+3.  Reset detection state:  
 
-After executing /keyboarddetector matchgroup @p 49,50,51 true in a loop:
+````command
+/keyboarddetector flush
+````
 
-Pressing/releasing '1','2','3' maintains a persistent signal.
+#### Effects
+🔻 Immediately terminates all active redstone signals  
 
-Executing /keyboarddetector flush will:
+♻️ Resets all detection states  
 
-Immediately terminate the redstone signal.
-
-Reset detection until the next valid simultaneous key press.
+🚦 Requires new key combination press to reactivate  
