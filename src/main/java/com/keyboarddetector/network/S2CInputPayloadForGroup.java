@@ -8,15 +8,15 @@ import org.jetbrains.annotations.NotNull;
 import java.util.HashSet;
 import java.util.Set;
 
-import static com.keyboarddetector.KeyboardDetector.*;
+import static com.keyboarddetector.KeyboardDetector.KEY_GROUP_PACKET_ID;
 
-public record S2CInputPayload(Set<Byte> asciiCodes) implements CustomPacketPayload {
+public record S2CInputPayloadForGroup(Set<Byte> asciiCodesGroup) implements CustomPacketPayload {
 
-    public static final CustomPacketPayload.Type<S2CInputPayload> ID = new CustomPacketPayload.Type<>(KEY_PRESSED_PACKET_ID);
-    public static final StreamCodec<FriendlyByteBuf, S2CInputPayload> CODEC = StreamCodec.of(
-        (buf, payload) -> {
-            buf.writeByte(payload.asciiCodes().size());
-            for (int key : payload.asciiCodes()) {
+    public static final Type<S2CInputPayloadForGroup> ID_GROUP = new Type<>(KEY_GROUP_PACKET_ID);
+    public static final StreamCodec<FriendlyByteBuf, S2CInputPayloadForGroup> CODEC_GROUP = StreamCodec.of(
+        (buf, payloadForGroup) -> {
+            buf.writeByte(payloadForGroup.asciiCodesGroup().size());
+            for (int key : payloadForGroup.asciiCodesGroup()) {
                 buf.writeByte(key);
             }
         },
@@ -26,12 +26,12 @@ public record S2CInputPayload(Set<Byte> asciiCodes) implements CustomPacketPaylo
             for (int i = 0; i < size; i++) {
                 keys.add(buf.readByte());
             }
-            return new S2CInputPayload(keys);
+            return new S2CInputPayloadForGroup(keys);
         }
     );
 
     @Override
     public @NotNull Type<? extends CustomPacketPayload> type() {
-        return ID;
+        return ID_GROUP;
     }
 }

@@ -1,6 +1,8 @@
 package com.keyboarddetector;
 
 import com.keyboarddetector.network.S2CInputPayload;
+import com.keyboarddetector.network.S2CInputPayloadForKeyTap;
+import com.keyboarddetector.network.S2CInputPayloadForGroup;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
@@ -29,13 +31,20 @@ public class KeyboardDetectorClient implements ClientModInitializer {
             }
 
             Set<Byte> pressedKeys = new HashSet<>();
-            for (byte ascii = 32; ascii < 124; ascii++) {
+            for (byte ascii = 48; ascii < 58; ascii++) {
+                if (isKeyPressed(ascii)) {
+                    pressedKeys.add(ascii);
+                }
+            }
+            for (byte ascii = 65; ascii < 91; ascii++) {
                 if (isKeyPressed(ascii)) {
                     pressedKeys.add(ascii);
                 }
             }
             if (!pressedKeys.isEmpty()) {
                 ClientPlayNetworking.send(new S2CInputPayload(pressedKeys));
+                ClientPlayNetworking.send(new S2CInputPayloadForKeyTap(pressedKeys));
+                ClientPlayNetworking.send(new S2CInputPayloadForGroup(pressedKeys));
             }
         });
     }

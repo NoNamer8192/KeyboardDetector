@@ -1,5 +1,6 @@
 package com.keyboarddetector;
 
+import com.keyboarddetector.event.PlayerKeyMatchEvent;
 import com.keyboarddetector.util.KeyMatchingUtil;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.BoolArgumentType;
@@ -17,14 +18,18 @@ import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
-import static com.keyboarddetector.network.S2CInputPayload.CODEC;
-import static com.keyboarddetector.network.S2CInputPayload.ID;
+import static com.keyboarddetector.network.S2CInputPayload.*;
+import static com.keyboarddetector.network.S2CInputPayloadForKeyTap.CODEC_KEYTAP;
+import static com.keyboarddetector.network.S2CInputPayloadForKeyTap.ID_KEYTAP;
+import static com.keyboarddetector.network.S2CInputPayloadForGroup.CODEC_GROUP;
+import static com.keyboarddetector.network.S2CInputPayloadForGroup.ID_GROUP;
 
 public class KeyboardDetector implements ModInitializer {
 
@@ -33,10 +38,14 @@ public class KeyboardDetector implements ModInitializer {
 
     // 存储玩家按键状态
     public static final Map<UUID, Set<Byte>> playerKeyStates = new HashMap<>();
+    public static final Map<UUID, Set<Byte>> playerKeyStatesForKeyTap = new HashMap<>();
+    public static final Map<UUID, Set<Byte>> playerKeyStatesForGroup = new HashMap<>();
+    public static Map<UUID, Set<Byte>> getPlayerKeyStatesForKeyTapTemp = new HashMap<>();
 
     // 网络通信标识符
     public static final ResourceLocation KEY_PRESSED_PACKET_ID = ResourceLocation.fromNamespaceAndPath(MOD_ID, "key_pressed");
-
+    public static final ResourceLocation KEY_TAPPED_PACKET_ID = ResourceLocation.fromNamespaceAndPath(MOD_ID, "key_tapped");
+    public static final ResourceLocation KEY_GROUP_PACKET_ID = ResourceLocation.fromNamespaceAndPath(MOD_ID, "key_groups");
     @Override
     public void onInitialize() {
         LOGGER.info("""
@@ -52,13 +61,34 @@ public class KeyboardDetector implements ModInitializer {
 
         // 注册网络接收器
         PayloadTypeRegistry.playC2S().register(ID, CODEC);
-        ServerPlayNetworking.registerGlobalReceiver(ID, (payload, context) -> playerKeyStates.put(context.player().getUUID(), payload.asciiCodes()));
-
+        PayloadTypeRegistry.playC2S().register(ID_KEYTAP, CODEC_KEYTAP);
+        PayloadTypeRegistry.playC2S().register(ID_GROUP, CODEC_GROUP);
+        ServerPlayNetworking.registerGlobalReceiver(ID, (payload, context) -> {
+            ServerPlayer player = context.player();
+            playerKeyStates.put(player.getUUID(), payload.asciiCodes());
+            // 触发按键按下事件
+            triggerKeyMatchEvent(player, payload.asciiCodes());
+        });
+        ServerPlayNetworking.registerGlobalReceiver(ID_KEYTAP, (payload2, context) -> {
+            Player player = context.player();
+            playerKeyStatesForKeyTap.put(player.getUUID(), payload2.asciiCodesKeyTap());
+        });
+        ServerPlayNetworking.registerGlobalReceiver(ID_GROUP, (payload3, context) -> {
+            Player player = context.player();
+            playerKeyStatesForGroup.put(player.getUUID(), payload3.asciiCodesGroup());
+        });
         // 注册命令
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> registerCommand(dispatcher));
     }
 
+    // 新增方法：触发按键匹配事件
+    private void triggerKeyMatchEvent(ServerPlayer player, Collection<Byte> pressedKeys) {
+        // 触发事件，让其他插件可以监听和处理
+        PlayerKeyMatchEvent.EVENT.invoker().onPlayerKeyMatch(player, pressedKeys);
+    }
+
     private void registerCommand(CommandDispatcher<CommandSourceStack> dispatcher) {
+        // 原代码不变
         dispatcher.register(
             Commands.literal("keyboarddetector")
                 .then(Commands.literal("matchgroup")
@@ -66,20 +96,26 @@ public class KeyboardDetector implements ModInitializer {
                     .then(Commands.argument("player", EntityArgument.player())
                         .then(Commands.argument("formattedAscii", StringArgumentType.greedyString())
                             .executes(this::executeMatchGroup))))
+                    .then(Commands.literal("iskeytapped")
+                            .requires(source -> source.hasPermission(2)) // OP权限
+                            .then(Commands.argument("player", EntityArgument.player())
+                                    .then(Commands.argument("formattedAscii", StringArgumentType.greedyString())
+                                            .executes(this::executeIsKeyTapped))))
                 .then(Commands.literal("iskeydown")
                     .requires(source -> source.hasPermission(2))
                     .then(Commands.argument("player", EntityArgument.player())
-                        .then(Commands.argument("keyAscii", IntegerArgumentType.integer(48, 90)) //可自行根据需求调整范围，客户端端也要跟着调
+                        .then(Commands.argument("keyAscii", IntegerArgumentType.integer(48, 90))
                             .then(Commands.argument("keepStatic", BoolArgumentType.bool())
-                                .executes(this::executeIsKeyDown)))))
+                                .executes(this::executeIsKeyDown)))))// 省略部分代码
                 .then(Commands.literal("flush")
-                    .requires(source -> source.hasPermission(2)) // OP权限
+                    .requires(source -> source.hasPermission(2))
                     .then(Commands.argument("player", EntityArgument.player())
                         .executes(this::executeFlush)))
         );
     }
 
     private int executeIsKeyDown(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        // 原代码不变
         CommandSourceStack source = context.getSource();
         Player targetPlayer = EntityArgument.getPlayer(context, "player");
         byte asciiKey = (byte) IntegerArgumentType.getInteger(context, "keyAscii");
@@ -108,6 +144,34 @@ public class KeyboardDetector implements ModInitializer {
         return 1; // 成功，返1（红石信号）
     }
 
+    private int executeIsKeyTapped(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        CommandSourceStack source = context.getSource();
+        Player targetPlayer = EntityArgument.getPlayer(context, "player");
+        String formattedAscii = StringArgumentType.getString(context, "formattedAscii");
+        try {
+            List<Byte> expectedKeys = Arrays.stream(formattedAscii.split(",")).map(Byte::parseByte).toList();
+            UUID uuid = targetPlayer.getUUID();
+            Set<Byte> inputKeys = playerKeyStatesForKeyTap.getOrDefault(uuid, Collections.emptySet());
+            var pair = KeyMatchingUtil.matchAndRemove(inputKeys, expectedKeys);
+
+            if (pair.getFirst().isEmpty() && getPlayerKeyStatesForKeyTapTemp.isEmpty()) {
+                source.sendSuccess(() -> Component.literal("按键匹配成功: " + expectedKeys), true);
+                getPlayerKeyStatesForKeyTapTemp.putAll(playerKeyStatesForKeyTap);
+                return 1; // 成功，返1（红石信号）
+            }
+            if(!pair.getFirst().isEmpty()) {
+                getPlayerKeyStatesForKeyTapTemp.clear();
+                throw new SimpleCommandExceptionType(Component.literal("缺少的键: " + pair.getFirst() + " 多余的键  " + pair.getSecond())).create();
+            }
+            if(!getPlayerKeyStatesForKeyTapTemp.isEmpty()){
+                throw new SimpleCommandExceptionType(Component.literal("检测到长按，不作处理。")).create();
+            }
+        } catch (NumberFormatException e) {
+            throw new SimpleCommandExceptionType(Component.literal("匹配字符串 " + formattedAscii + " 包含非法的 Key ID 或格式")).create();
+        }
+        return 0;
+    }
+
     private int executeMatchGroup(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         CommandSourceStack source = context.getSource();
         Player targetPlayer = EntityArgument.getPlayer(context, "player");
@@ -115,7 +179,7 @@ public class KeyboardDetector implements ModInitializer {
         try {
             List<Byte> expectedKeys = Arrays.stream(formattedAscii.split(",")).map(Byte::parseByte).toList();
             UUID uuid = targetPlayer.getUUID();
-            Set<Byte> inputKeys = playerKeyStates.getOrDefault(uuid, Collections.emptySet());
+            Set<Byte> inputKeys = playerKeyStatesForGroup.getOrDefault(uuid, Collections.emptySet());
             var pair = KeyMatchingUtil.matchAndRemove(inputKeys, expectedKeys);
             if (pair.getFirst().isEmpty()) {
                 source.sendSuccess(() -> Component.literal("按键匹配成功: " + expectedKeys), true);
@@ -126,4 +190,5 @@ public class KeyboardDetector implements ModInitializer {
             throw new SimpleCommandExceptionType(Component.literal("匹配字符串 " + formattedAscii + " 包含非法的 Key ID 或格式")).create();
         }
     }
+
 }

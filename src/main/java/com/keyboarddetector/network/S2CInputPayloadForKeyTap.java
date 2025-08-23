@@ -10,13 +10,13 @@ import java.util.Set;
 
 import static com.keyboarddetector.KeyboardDetector.*;
 
-public record S2CInputPayload(Set<Byte> asciiCodes) implements CustomPacketPayload {
+public record S2CInputPayloadForKeyTap(Set<Byte> asciiCodesKeyTap) implements CustomPacketPayload {
 
-    public static final CustomPacketPayload.Type<S2CInputPayload> ID = new CustomPacketPayload.Type<>(KEY_PRESSED_PACKET_ID);
-    public static final StreamCodec<FriendlyByteBuf, S2CInputPayload> CODEC = StreamCodec.of(
-        (buf, payload) -> {
-            buf.writeByte(payload.asciiCodes().size());
-            for (int key : payload.asciiCodes()) {
+    public static final Type<S2CInputPayloadForKeyTap> ID_KEYTAP = new Type<>(KEY_TAPPED_PACKET_ID);
+    public static final StreamCodec<FriendlyByteBuf, S2CInputPayloadForKeyTap> CODEC_KEYTAP = StreamCodec.of(
+        (buf, payloadKeyTap) -> {
+            buf.writeByte(payloadKeyTap.asciiCodesKeyTap().size());
+            for (int key : payloadKeyTap.asciiCodesKeyTap()) {
                 buf.writeByte(key);
             }
         },
@@ -26,12 +26,12 @@ public record S2CInputPayload(Set<Byte> asciiCodes) implements CustomPacketPaylo
             for (int i = 0; i < size; i++) {
                 keys.add(buf.readByte());
             }
-            return new S2CInputPayload(keys);
+            return new S2CInputPayloadForKeyTap(keys);
         }
     );
 
     @Override
     public @NotNull Type<? extends CustomPacketPayload> type() {
-        return ID;
+        return ID_KEYTAP;
     }
 }
