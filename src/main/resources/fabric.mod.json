@@ -21,6 +21,12 @@
     ],
     "client": [
       "com.keyboarddetector.KeyboardDetectorClient"
+    ],
+    "api": [
+      "com.keyboarddetector.api.KeyboardDetectorAPI"
+    ],
+    "event": [
+      "com.keyboarddetector.event.PlayerKeyMatchEvent"
     ]
   },
   "depends": {
