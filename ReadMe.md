@@ -26,7 +26,7 @@ Detects real-time press state of a specific keyboard key.
 |Parameter |	Description |	Example Values |
 |------------|----------------|-----------------|
 | `<PlayerID>` |	Target player selector |	@p, @a[limit=1], @e[type=player,limit=1]|
-| `<KeyAscii>` |	ASCII code of the 11key to detect |	49 | 
+| `<KeyAscii>` |	ASCII code of the key to detect |	49 | 
 | `<keepStatic>` |	Persistent state mode (true/false) |	true, false | 
 ### Usage Examples
 #### Standard mode:
