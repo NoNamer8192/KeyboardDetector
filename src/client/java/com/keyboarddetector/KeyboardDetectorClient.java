@@ -31,16 +31,12 @@ public class KeyboardDetectorClient implements ClientModInitializer {
             }
 
             Set<Byte> pressedKeys = new HashSet<>();
-            for (byte ascii = 48; ascii < 58; ascii++) {
+            for (byte ascii = 32; ascii < 127; ascii++) {
                 if (isKeyPressed(ascii)) {
                     pressedKeys.add(ascii);
                 }
             }
-            for (byte ascii = 65; ascii < 91; ascii++) {
-                if (isKeyPressed(ascii)) {
-                    pressedKeys.add(ascii);
-                }
-            }
+            
             if (!pressedKeys.isEmpty()) {
                 ClientPlayNetworking.send(new S2CInputPayload(pressedKeys));
                 ClientPlayNetworking.send(new S2CInputPayloadForKeyTap(pressedKeys));
